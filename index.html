@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="JoyJet Capital — multi-asset portfolio for disciplined investors.">
+<meta name="theme-color" content="#0a0c10">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="JoyJet Capital">
+<title>JoyJet Capital</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23f0b90b'/%3E%3Cstop offset='1' stop-color='%23d97706'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cpath d='M32 12L14 22v16c0 11 8 21 18 24 10-3 18-13 18-24V22L32 12z' fill='%230a0c10'/%3E%3Cpath d='M32 22l-8 5v8c0 6 4 11 8 13 4-2 8-7 8-13v-8l-8-5z' fill='%23f0b90b' opacity='.9'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+<style>
+:root {
+  --bg: #090b0f; --panel: #12151c; --panel2: #1a1e28; --line: #2a303c;
+  --ink: #e9ecf1; --mute: #8892a0; --gold: #f0b90b; --gold2: #fcd535;
+  --up: #0ecb81; --down: #f6465d; --info: #4f8cff;
+  --r: 16px; --dock: 68px; --safe-b: env(safe-area-inset-bottom, 0px);
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ease: cubic-bezier(.2,.8,.2,1);
+  --focus: 0 0 0 3px color-mix(in srgb, var(--gold) 55%, transparent);
+}
+[data-theme="light"] {
+  --bg: #f2f4f8; --panel: #fff; --panel2: #eef1f6; --line: #d5dbe6;
+  --ink: #12151a; --mute: #5c6578; --gold: #c9970a; --gold2: #b8860b;
+  --up: #059669; --down: #dc2626; --info: #2563eb;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+body {
+  font: 15px/1.5 var(--font); background: var(--bg); color: var(--ink);
+  min-height: 100dvh; padding-bottom: calc(var(--dock) + var(--safe-b));
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; border: 0; background: none; }
+a { color: inherit; text-decoration: none; }
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; box-shadow: var(--focus); }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible,
+[role="button"]:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--gold); outline-offset: 2px; box-shadow: var(--focus);
+}
+
+/* ── Top nav ── */
+.topbar {
+  position: sticky; top: 0; z-index: 60;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 16px; border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+  backdrop-filter: blur(16px);
+}
+.brand {
+  display: flex; align-items: center; gap: 12px; font-weight: 800;
+  letter-spacing: -0.03em; font-size: 1.05rem;
+}
+.brand-mark {
+  width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+  background: linear-gradient(145deg, var(--gold), #d97706);
+  display: grid; place-items: center;
+  box-shadow: 0 6px 18px rgba(240,185,11,.35);
+}
+.brand-mark svg { width: 24px; height: 24px; display: block; }
+.brand small {
+  display: block; font-weight: 600; font-size: 0.65rem;
+  letter-spacing: 0.08em; color: var(--mute); margin-top: -2px;
+}
+.top-links {
+  display: flex; align-items: center; gap: 2px;
+}
+.top-links a, .icon-btn {
+  padding: 8px 12px; border-radius: 10px; color: var(--mute);
+  font-weight: 600; font-size: 0.88rem;
+}
+.top-links a[aria-current="page"], .top-links a:hover, .icon-btn:hover {
+  background: var(--panel2); color: var(--gold);
+}
+.icon-btn { display: inline-flex; align-items: center; gap: 6px; }
+.burger { display: none; font-size: 1.4rem; padding: 6px 10px; color: var(--mute); }
+.install {
+  display: none; background: var(--gold); color: #0a0c10;
+  font-weight: 800; font-size: 0.78rem; padding: 8px 14px; border-radius: 10px;
+}
+.install.on { display: inline-flex; }
+.mobile-drawer {
+  display: none; position: fixed; inset: 0; z-index: 80;
+  background: rgba(0,0,0,.55);
+}
+.mobile-drawer.on { display: block; }
+.mobile-drawer nav {
+  position: absolute; top: 0; right: 0; width: min(300px, 88vw); height: 100%;
+  background: var(--panel); padding: 20px 16px; border-left: 1px solid var(--line);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.mobile-drawer a {
+  padding: 14px 16px; border-radius: 12px; font-weight: 600; color: var(--mute);
+}
+.mobile-drawer a:hover, .mobile-drawer a[aria-current="page"] {
+  background: var(--panel2); color: var(--gold);
+}
+
+@media (max-width: 820px) {
+  .top-links { display: none; }
+  .burger { display: inline-flex; }
+}
+
+/* ── Layout ── */
+.shell { width: min(1100px, 100%); margin: 0 auto; padding: 18px 16px 28px; }
+.view { display: none; animation: rise .28s var(--ease); }
+.view.on { display: block; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ── Hero ── */
+.hero {
+  background:
+    radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, var(--gold) 18%, transparent), transparent 55%),
+    linear-gradient(145deg, var(--panel), var(--panel2));
+  border: 1px solid var(--line); border-radius: calc(var(--r) + 4px);
+  padding: 1.5rem 1.35rem 1.35rem; margin-bottom: 1rem;
+}
+.hero .greet { font-size: 0.95rem; color: var(--mute); margin-bottom: 0.25rem; }
+.hero .greet strong { color: var(--gold); font-weight: 700; }
+.hero .bal {
+  font-size: clamp(2rem, 7vw, 2.75rem); font-weight: 800;
+  letter-spacing: -0.04em; color: var(--gold); font-variant-numeric: tabular-nums;
+  line-height: 1.1; margin: 0.2rem 0 0.85rem;
+}
+.hero-meta {
+  display: flex; flex-wrap: wrap; gap: 10px 18px;
+  font-size: 0.8rem; color: var(--mute);
+}
+.hero-meta strong { color: var(--ink); font-weight: 700; }
+.up { color: var(--up) !important; }
+.down { color: var(--down) !important; }
+
+/* ── Goal ── */
+.goal {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 1rem 1.1rem; margin-bottom: 1rem;
+}
+.goal-head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  margin-bottom: 0.55rem; flex-wrap: wrap;
+}
+.goal-head h2 { font-size: 0.9rem; font-weight: 700; }
+.goal-head span { font-size: 0.78rem; color: var(--mute); }
+.track {
+  height: 12px; border-radius: 999px; background: var(--panel2);
+  border: 1px solid var(--line); overflow: hidden;
+}
+.track > i {
+  display: block; height: 100%; border-radius: inherit;
+  background: linear-gradient(90deg, var(--gold), var(--gold2));
+  width: 0%; transition: width .5s var(--ease);
+}
+.goal-foot {
+  display: flex; justify-content: space-between; margin-top: 0.5rem;
+  font-size: 0.75rem; color: var(--mute);
+}
+
+/* ── Panels / cards ── */
+.panel {
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+  padding: 1rem; margin-bottom: 0.9rem;
+}
+.panel h2 {
+  font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--mute); margin-bottom: 0.75rem;
+}
+.grid-2 { display: grid; gap: 0.9rem; }
+@media (min-width: 640px) { .grid-2 { grid-template-columns: 1.4fr 1fr; } }
+
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 0.9rem; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 12px 16px; border-radius: 12px; font-weight: 700;
+  transition: transform .15s var(--ease), background .15s;
+}
+.btn:active { transform: scale(0.98); }
+.btn-gold { background: var(--gold); color: #0a0c10; width: 100%; }
+.btn-gold:hover { filter: brightness(1.05); }
+.btn-ghost {
+  background: transparent; border: 1px solid var(--line); color: var(--ink); width: 100%;
+}
+.btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+.btn-danger { background: var(--down); color: #fff; width: 100%; }
+.btn-sm { padding: 6px 10px; font-size: 0.75rem; width: auto; border-radius: 8px; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Chart ── */
+.chart-box { position: relative; height: 200px; }
+.chart-box canvas { width: 100% !important; height: 100% !important; }
+
+/* ── Tickers ── */
+.tickers {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px;
+}
+.ticker {
+  border: 1px solid var(--line); border-radius: 12px; padding: 10px;
+  background: color-mix(in srgb, var(--bg) 40%, var(--panel));
+}
+.ticker .sym { font-size: 0.72rem; color: var(--mute); font-weight: 700; }
+.ticker .px { font-weight: 800; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.ticker .d { font-size: 0.7rem; margin-top: 2px; }
+.ticker .tag {
+  display: inline-block; font-size: 0.62rem; font-weight: 700;
+  padding: 1px 6px; border-radius: 4px; margin-left: 4px;
+  background: var(--panel2); color: var(--mute);
+}
+
+/* ── Holdings table ── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+th {
+  text-align: left; font-size: 0.72rem; color: var(--mute); font-weight: 600;
+  padding: 8px 6px; border-bottom: 1px solid var(--line);
+}
+td { padding: 12px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+.asset-cell { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── Blueprint rail ── */
+.rail {
+  display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px;
+  scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+}
+.plan {
+  flex: 0 0 200px; scroll-snap-align: start; text-align: left;
+  border: 1px solid var(--line); border-radius: 14px; padding: 14px;
+  background: var(--bg);
+}
+.plan[aria-checked="true"] {
+  border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold);
+}
+.plan strong { display: block; margin-bottom: 4px; }
+.plan span { font-size: 0.72rem; color: var(--mute); display: block; }
+.plan em {
+  display: block; margin-top: 10px; font-style: normal;
+  color: var(--up); font-weight: 700; font-size: 0.78rem;
+}
+
+/* ── Forms ── */
+.field { margin-bottom: 0.85rem; }
+.field label { display: block; font-size: 0.75rem; color: var(--mute); margin-bottom: 6px; font-weight: 600; }
+.field input, .field select {
+  width: 100%; padding: 12px 14px; border-radius: 12px;
+  border: 1px solid var(--line); background: var(--bg);
+}
+.field input:focus, .field select:focus { border-color: var(--gold); }
+
+/* ── Feed / ledger ── */
+.feed { list-style: none; }
+.feed li {
+  display: grid; grid-template-columns: 10px 1fr auto; gap: 10px;
+  padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 0.88rem;
+}
+.feed li:last-child { border-bottom: 0; }
+.feed .pip { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; background: var(--gold); }
+.feed .pip.in { background: var(--up); }
+.feed .pip.out { background: var(--down); }
+.feed time { color: var(--mute); font-size: 0.72rem; white-space: nowrap; }
+.seg {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 0.75rem;
+}
+.seg button {
+  border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px;
+  font-size: 0.75rem; color: var(--mute); font-weight: 600;
+}
+.seg button[aria-pressed="true"] {
+  border-color: var(--gold); color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 12%, transparent);
+}
+
+/* ── Me / support ── */
+.list-menu { list-style: none; }
+.list-menu li {
+  border-bottom: 1px solid var(--line); padding: 14px 4px;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+}
+.list-menu li:last-child { border-bottom: 0; }
+.list-menu button, .list-menu a {
+  width: 100%; text-align: left; font-weight: 600; display: flex;
+  justify-content: space-between; align-items: center; color: var(--ink);
+}
+.list-menu .chev { color: var(--mute); font-size: 0.9rem; }
+
+/* ── Dialogs ── */
+.scrim {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,.55); align-items: center; justify-content: center;
+  padding: 16px;
+}
+.scrim.on { display: flex; }
+.dialog {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 18px;
+  padding: 1.35rem; width: min(400px, 100%); max-height: 90dvh; overflow-y: auto;
+  box-shadow: 0 24px 60px rgba(0,0,0,.45);
+}
+.dialog h3 { margin-bottom: 0.35rem; font-size: 1.1rem; }
+.dialog p { color: var(--mute); font-size: 0.88rem; margin-bottom: 1rem; }
+.dialog-actions { display: flex; gap: 8px; margin-top: 1rem; }
+.dialog-actions .btn { flex: 1; }
+.warn-box {
+  background: color-mix(in srgb, var(--down) 12%, var(--panel));
+  border: 1px solid color-mix(in srgb, var(--down) 40%, var(--line));
+  border-radius: 12px; padding: 12px 14px; font-size: 0.85rem;
+  font-weight: 600; color: var(--down); margin-bottom: 1rem; line-height: 1.4;
+}
+
+/* ── Toasts ── */
+.toasts {
+  position: fixed; top: 14px; right: 14px; z-index: 120;
+  display: flex; flex-direction: column; gap: 8px;
+  max-width: min(320px, calc(100vw - 28px)); pointer-events: none;
+}
+.toast {
+  background: var(--panel); border: 1px solid var(--line);
+  border-left: 3px solid var(--gold); border-radius: 12px;
+  padding: 12px 14px; font-size: 0.85rem; font-weight: 600;
+  animation: rise .25s var(--ease); pointer-events: auto;
+}
+.toast.ok { border-left-color: var(--up); }
+.toast.bad { border-left-color: var(--down); }
+
+/* ── Dock ── */
+.dock {
+  position: fixed; left: 50%; bottom: 0; transform: translateX(-50%);
+  width: min(1100px, 100%); z-index: 50;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px;
+  padding: 8px 8px calc(8px + var(--safe-b));
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  backdrop-filter: blur(16px); border-top: 1px solid var(--line);
+}
+.dock button {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px 4px; border-radius: 12px; font-size: 0.68rem;
+  font-weight: 600; color: var(--mute);
+}
+.dock button[aria-current="page"] {
+  color: var(--gold); background: color-mix(in srgb, var(--gold) 12%, transparent);
+}
+.dock svg { width: 22px; height: 22px; }
+
+.empty { text-align: center; color: var(--mute); padding: 1.25rem 0.5rem; font-size: 0.88rem; }
+.foot {
+  text-align: center; font-size: 0.72rem; color: var(--mute);
+  padding: 1.25rem 0 0.25rem;
+}
+.foot b { color: var(--gold); }
+.api-note { font-size: 0.72rem; color: var(--mute); margin-top: 6px; }
+.legend {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;
+  font-size: 0.72rem; color: var(--mute);
+}
+.legend i {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px;
+}
+
+h1.page-title { font-size: clamp(1.2rem, 3vw, 1.5rem); font-weight: 800; margin-bottom: 14px; }
+.prose { color: var(--mute); line-height: 1.6; font-size: 0.9rem; }
+.prose p { margin-bottom: 0.75rem; }
+.prose h3 { color: var(--ink); font-size: 0.95rem; margin: 1rem 0 0.45rem; }
+.prose ul { padding-left: 1.15rem; margin-bottom: 0.75rem; }
+.prose li { margin-bottom: 0.35rem; }
+.prose strong { color: var(--ink); }
+.wa-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 14px 16px; border-radius: 12px; font-weight: 800;
+  background: #25D366; color: #063; text-align: center; margin-top: 8px;
+}
+.wa-btn:hover { filter: brightness(1.05); }
+.profile-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px;
+  margin-top: 0.75rem;
+}
+.stat-chip {
+  background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px;
+}
+.stat-chip span { display: block; font-size: 0.72rem; color: var(--mute); margin-bottom: 4px; }
+.stat-chip strong { font-size: 1rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.avatar {
+  width: 56px; height: 56px; border-radius: 16px;
+  background: linear-gradient(145deg, var(--gold), #d97706);
+  display: grid; place-items: center; font-weight: 800; color: #0a0c10; font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.profile-head { display: flex; gap: 14px; align-items: center; margin-bottom: 0.5rem; }
+</style>
+</head>
+<body>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3L4 8v7c0 5 3.5 9 8 10 4.5-1 8-5 8-10V8l-8-5z" fill="#0a0c10"/><path d="M12 8l-4 2.5v4c0 2.8 1.8 5 4 5.8 2.2-.8 4-3 4-5.8v-4L12 8z" fill="#f0b90b"/></svg>
+    </div>
+    <div>JoyJet<small>CAPITAL</small></div>
+  </div>
+  <nav class="top-links" aria-label="Primary">
+    <a href="#home" data-route="home">Dashboard</a>
+    <a href="#trade" data-route="trade">Invest</a>
+    <a href="#history" data-route="history">History</a>
+    <a href="#support" data-route="support">Support</a>
+    <a href="#about" data-route="about">About us</a>
+  </nav>
+  <div style="display:flex;align-items:center;gap:6px">
+    <button type="button" class="install" id="installBtn">Install</button>
+    <button type="button" class="icon-btn" id="themeBtn" aria-label="Toggle theme">◐</button>
+    <button type="button" class="burger" id="burger" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<div class="mobile-drawer" id="drawer" hidden>
+  <nav>
+    <a href="#home" data-route="home">Dashboard</a>
+    <a href="#trade" data-route="trade">Invest</a>
+    <a href="#history" data-route="history">History</a>
+    <a href="#pulse" data-route="pulse">Pulse</a>
+    <a href="#me" data-route="me">Me</a>
+    <a href="#support" data-route="support">Support</a>
+    <a href="#about" data-route="about">About us</a>
+    <a href="#terms" data-route="terms">Terms</a>
+    <a href="#privacy" data-route="privacy">Privacy</a>
+  </nav>
+</div>
+
+<main class="shell">
+  <!-- HOME -->
+  <section class="view on" id="view-home" data-view="home">
+    <div class="hero">
+      <p class="greet">Hello, <strong id="who">Anthony &amp; Indiana</strong> 💸</p>
+      <p class="bal" id="balTotal">$0.00</p>
+      <div class="hero-meta">
+        <span>Cash <strong id="balCash">$0</strong></span>
+        <span>Holdings <strong id="balHold">$0</strong></span>
+        <span>Cost <strong id="balCost">$0</strong></span>
+        <span>P&amp;L <strong id="balPnl">$0</strong></span>
+      </div>
+    </div>
+
+    <div class="goal" aria-label="Savings goal">
+      <div class="goal-head">
+        <h2>Goal · $10,000</h2>
+        <span>Deadline · Dec 2026</span>
+      </div>
+      <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="10000" aria-valuenow="0" id="goalBar">
+        <i id="goalFill"></i>
+      </div>
+      <div class="goal-foot">
+        <span id="goalPct">0% of target</span>
+        <span id="goalLeft">$10,000 to go</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-gold" data-act="deposit">+ Deposit</button>
+      <button type="button" class="btn btn-ghost" data-act="withdraw">− Withdraw</button>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <h2>Equity curve</h2>
+        <div class="chart-box"><canvas id="equityChart" aria-label="Interactive equity chart"></canvas></div>
+      </div>
+      <div class="panel">
+        <h2>Allocation</h2>
+        <div class="chart-box"><canvas id="allocChart" aria-label="Allocation chart"></canvas></div>
+        <div class="legend" id="allocLegend"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Positions</h2>
+      <div class="table-wrap" id="holdingsMount"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Market pulse <span id="tickAt" style="font-weight:500;text-transform:none;letter-spacing:0"></span></h2>
+      <div class="tickers" id="tickers"></div>
+      <p class="api-note">Crypto via CoinGecko · equities refresh with live fallback</p>
+    </div>
+  </section>
+
+  <!-- TRADE -->
+  <section class="view" id="view-trade" data-view="trade">
+    <h1 class="page-title">Invest</h1>
+    <div class="panel">
+      <h2>Buy</h2>
+      <div class="field">
+        <label for="asset">Asset</label>
+        <select id="asset"></select>
+      </div>
+      <div class="field">
+        <label for="usdIn">Amount (USD)</label>
+        <input id="usdIn" type="number" min="1" step="0.01" placeholder="250" inputmode="decimal">
+      </div>
+      <button type="button" class="btn btn-gold" data-act="buy">Invest Now</button>
+    </div>
+    <div class="panel">
+      <h2>Allocation blueprints</h2>
+      <div class="rail" id="blueprints" role="listbox" aria-label="Blueprints"></div>
+      <button type="button" class="btn btn-gold" data-act="plan-buy" id="planBuy" disabled style="margin-top:12px">Run selected blueprint</button>
+    </div>
+  </section>
+
+  <!-- PULSE -->
+  <section class="view" id="view-pulse" data-view="pulse">
+    <h1 class="page-title">Pulse</h1>
+    <div class="panel">
+      <h2>Price triggers</h2>
+      <div class="field"><label for="aSym">Asset</label><select id="aSym"></select></div>
+      <div class="field"><label for="aPx">Target USD</label><input id="aPx" type="number" min="0" step="0.01" inputmode="decimal"></div>
+      <div class="field"><label for="aDir">When</label>
+        <select id="aDir"><option value="above">Crosses above</option><option value="below">Crosses below</option></select>
+      </div>
+      <button type="button" class="btn btn-gold" data-act="arm">Arm trigger</button>
+    </div>
+    <div class="panel">
+      <h2>Armed triggers</h2>
+      <div id="armedMount"><p class="empty">No triggers armed.</p></div>
+    </div>
+    <div class="panel">
+      <h2>Live activity</h2>
+      <ul class="feed" id="feedMount"></ul>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section class="view" id="view-history" data-view="history">
+    <h1 class="page-title">History</h1>
+    <div class="seg" id="txSeg" role="tablist">
+      <button type="button" data-filter="all" aria-pressed="true">All</button>
+      <button type="button" data-filter="Deposit">Deposit</button>
+      <button type="button" data-filter="Invest">Invest</button>
+      <button type="button" data-filter="Sell">Sell</button>
+      <button type="button" data-filter="Withdraw">Withdraw</button>
+    </div>
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h2 style="margin:0">Ledger</h2>
+        <button type="button" class="btn btn-ghost btn-sm" data-act="csv">CSV</button>
+      </div>
+      <ul class="feed" id="ledgerMount"></ul>
+    </div>
+    <div class="panel">
+      <h2>Tax summary</h2>
+      <div id="taxMount"></div>
+      <button type="button" class="btn btn-ghost" data-act="tax-csv" style="margin-top:10px">Export tax CSV</button>
+    </div>
+  </section>
+
+  <!-- ME / PROFILE -->
+  <section class="view" id="view-me" data-view="me">
+    <h1 class="page-title">Profile</h1>
+    <div class="panel">
+      <div class="profile-head">
+        <div class="avatar" aria-hidden="true">AI</div>
+        <div>
+          <p style="font-weight:800;font-size:1.15rem" id="meWho">Anthony &amp; Indiana</p>
+          <p style="color:var(--mute);font-size:0.85rem;margin-top:2px">JoyJet Capital Unlimited · Investor</p>
+        </div>
+      </div>
+      <div class="profile-grid">
+        <div class="stat-chip"><span>Available balance</span><strong id="meBal">$0</strong></div>
+        <div class="stat-chip"><span>Holdings value</span><strong id="meHold">$0</strong></div>
+        <div class="stat-chip"><span>Interest / P&amp;L</span><strong id="meInterest">$0</strong></div>
+        <div class="stat-chip"><span>Transactions</span><strong id="meTxCount">0</strong></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Savings goal</h2>
+      <p id="meGoal" style="font-size:0.9rem;margin-bottom:8px"></p>
+      <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="10000" id="meGoalBar">
+        <i id="meGoalFill"></i>
+      </div>
+      <div class="goal-foot">
+        <span id="meGoalPct">0%</span>
+        <span>Deadline · Dec 2026</span>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Holdings</h2>
+      <div id="meHoldings"><p class="empty">No holdings</p></div>
+    </div>
+    <div class="panel">
+      <h2>Recent transactions</h2>
+      <ul class="feed" id="meTx"></ul>
+      <button type="button" class="btn btn-ghost" data-route="history" style="margin-top:10px">View full history</button>
+    </div>
+    <div class="panel">
+      <h2>Live activity</h2>
+      <ul class="feed" id="meActivity"></ul>
+    </div>
+    <div class="panel">
+      <ul class="list-menu">
+        <li><button type="button" id="themeBtnMe">Theme <span class="chev" id="themeLabel">Dark</span></button></li>
+        <li><a href="#support" data-route="support">Help &amp; Support <span class="chev">›</span></a></li>
+        <li><a href="#about" data-route="about">About us <span class="chev">›</span></a></li>
+        <li><a href="#terms" data-route="terms">Terms &amp; Conditions <span class="chev">›</span></a></li>
+        <li><a href="#privacy" data-route="privacy">Privacy Policy <span class="chev">›</span></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SUPPORT -->
+  <section class="view" id="view-support" data-view="support">
+    <h1 class="page-title">Help &amp; Support</h1>
+    <div class="panel">
+      <h2>JoyJet Capital Support</h2>
+      <p class="prose">We're here to help 24/7. Have questions about your account, investments, or deposits?</p>
+      <h3 style="font-size:0.9rem;margin:12px 0 8px">Contact us directly</h3>
+      <ul class="list-menu">
+        <li>
+          <a href="mailto:joyjetcapitalsupport@gmail.com">
+            Email · joyjetcapitalsupport@gmail.com
+            <span class="chev">›</span>
+          </a>
+        </li>
+      </ul>
+      <p class="prose" style="margin-top:8px">Response within 2–6 hours.</p>
+      <a class="wa-btn" href="https://wa.me/19197241336?text=Hello%20JoyJet%20Capital%2C%20I%20would%20like%20to%20make%20an%20Investment%20in%20your%20company%2C%20how%20much%20is%20the%20investment%E2%80%99s%20starter%20pack%20plan%20and%20how%20much%20is%20the%20initial%20investment%20deposit%20cost%20and%20interest%20rates%3F" target="_blank" rel="noopener noreferrer">
+        Chat on WhatsApp
+      </a>
+      <p class="prose" style="margin-top:10px;font-size:0.8rem">WhatsApp: +1 (919) 724-1336</p>
+    </div>
+    <div class="panel prose">
+      <h2 style="text-transform:none;letter-spacing:0;font-size:0.95rem;color:var(--ink)">Quick answers</h2>
+      <h3>How do I start investing?</h3>
+      <ol style="padding-left:1.15rem;margin-bottom:0.75rem">
+        <li>Contact us via Email or WhatsApp.</li>
+        <li>We will send you the available Starter Pack Plans.</li>
+        <li>Choose your plan and receive deposit instructions.</li>
+        <li>Your investment starts earning immediately after confirmation.</li>
+      </ol>
+      <h3>What payment methods do you accept?</h3>
+      <p>Bank transfer, crypto, and other methods as provided by support.</p>
+      <h3>How long is the withdrawal process?</h3>
+      <p>Withdrawals are processed within 24–48 hours after request.</p>
+      <h3>Is my capital secure?</h3>
+      <p>We use secure custodial practices and encrypted systems to protect client data and funds.</p>
+      <p>Need more help? Email <a href="mailto:joyjetcapitalsupport@gmail.com" style="color:var(--gold)">joyjetcapitalsupport@gmail.com</a></p>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="view" id="view-about" data-view="about">
+    <h1 class="page-title">About us</h1>
+    <div class="panel prose">
+      <h2 style="text-transform:none;letter-spacing:0;font-size:1.05rem;color:var(--gold);margin-bottom:0.5rem">JoyJet Capital Unlimited</h2>
+      <p style="font-weight:700;color:var(--ink)">Where Your Money Takes Flight</p>
+      <p>Welcome to JoyJet Capital Unlimited. We are a modern savings and investment platform built to help everyday people grow wealth with confidence, clarity, and security.</p>
+      <h3>Our Story</h3>
+      <p>JoyJet was founded on one belief: financial growth should be joyful, not stressful. Traditional banks give you low returns and high fees. We do the opposite — high-yield opportunities, transparent terms, and human support. The "Jet" in our name stands for velocity, elevation, and unlimited potential.</p>
+      <h3>What We Offer</h3>
+      <ul>
+        <li><strong>Secure Savings Accounts:</strong> High-yield, protected savings with competitive interest rates and flexible withdrawals.</li>
+        <li><strong>Starter, Growth &amp; Premium Investment Plans:</strong> Tailored packages for beginners to advanced investors with clear ROI structures and timelines.</li>
+        <li><strong>Capital Growth &amp; Retirement Planning:</strong> Long-term wealth building with compound growth strategies.</li>
+        <li><strong>Financial Education:</strong> Free guides, calculators, and market updates inside your dashboard.</li>
+      </ul>
+      <h3>Why Choose Us</h3>
+      <p>Protected &amp; Secure Infrastructure, No Hidden Fees, Fast Deposits &amp; Withdrawals, Real Human Support, and Unlimited Growth Potential.</p>
+      <h3>Mission &amp; Vision</h3>
+      <p><strong>Mission:</strong> to democratize wealth creation.<br>
+      <strong>Vision:</strong> a world where everyone can save confidently and invest wisely.</p>
+      <p>Ready to take off? Join JoyJet Capital Unlimited today.</p>
+      <p>Contact: <a href="mailto:joyjetcapitalsupport@gmail.com" style="color:var(--gold)">joyjetcapitalsupport@gmail.com</a><br>
+      WhatsApp: +1 (919) 724-1336</p>
+      <a class="wa-btn" href="https://wa.me/19197241336?text=Hello%20JoyJet%20Capital%2C%20I%20would%20like%20to%20make%20an%20Investment%20in%20your%20company%2C%20how%20much%20is%20the%20investment%E2%80%99s%20starter%20pack%20plan%20and%20how%20much%20is%20the%20initial%20investment%20deposit%20cost%20and%20interest%20rates%3F" target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a>
+    </div>
+    <div class="panel">
+      <ul class="list-menu">
+        <li><a href="#terms" data-route="terms">Terms &amp; Conditions <span class="chev">›</span></a></li>
+        <li><a href="#privacy" data-route="privacy">Privacy Policy <span class="chev">›</span></a></li>
+        <li><a href="#support" data-route="support">Support Center <span class="chev">›</span></a></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- TERMS -->
+  <section class="view" id="view-terms" data-view="terms">
+    <h1 class="page-title">Terms &amp; Conditions</h1>
+    <div class="panel prose">
+      <p style="font-size:0.8rem">Last Updated: September 27, 2026</p>
+      <p>Welcome to JoyJet Capital Unlimited. By accessing our website joyjet-savings-and-investments.github.io or using our services, you agree to these Terms.</p>
+      <h3>1. Acceptance</h3>
+      <p>You must be 18+ years old to use our services.</p>
+      <h3>2. Investment Risk Disclosure</h3>
+      <p>All investments involve risk. Past performance does not guarantee future returns. Interest rates and plans are subject to market conditions. You should only invest what you can afford. This is not financial advice.</p>
+      <h3>3. Accounts</h3>
+      <p>You are responsible for keeping your account information confidential and for all activities under your account.</p>
+      <h3>4. Deposits &amp; Withdrawals</h3>
+      <p>All deposits must come from a source owned by you. Withdrawals are subject to verification for security.</p>
+      <h3>5. No Guarantee</h3>
+      <p>While we strive for competitive returns, we do not guarantee profits. All rates provided by support are estimates and subject to final terms.</p>
+      <h3>6. Prohibited Activities</h3>
+      <p>Fraud, money laundering, or misuse of the platform is strictly prohibited.</p>
+      <h3>7. Termination</h3>
+      <p>We reserve the right to suspend accounts that violate these terms.</p>
+      <h3>8. Contact</h3>
+      <p>For questions about these Terms, contact <a href="mailto:joyjetcapitalsupport@gmail.com" style="color:var(--gold)">joyjetcapitalsupport@gmail.com</a></p>
+      <p style="font-size:0.8rem;margin-top:1rem">Disclaimer: This website is for investment purposes. Please consult our licensed professional financial advisor via WhatsApp or Email before making investment decisions.</p>
+      <a class="wa-btn" href="https://wa.me/19197241336?text=Hello%20JoyJet%20Capital%2C%20I%20would%20like%20to%20make%20an%20Investment%20in%20your%20company%2C%20how%20much%20is%20the%20investment%E2%80%99s%20starter%20pack%20plan%20and%20how%20much%20is%20the%20initial%20investment%20deposit%20cost%20and%20interest%20rates%3F" target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a>
+    </div>
+  </section>
+
+  <!-- PRIVACY -->
+  <section class="view" id="view-privacy" data-view="privacy">
+    <h1 class="page-title">Privacy Policy</h1>
+    <div class="panel prose">
+      <p style="font-size:0.8rem">Last Updated: September 27, 2026</p>
+      <p>At JoyJet Capital Unlimited, your privacy is important to us.</p>
+      <h3>1. Information We Collect</h3>
+      <p>Name, email, phone number (WhatsApp), transaction history, and device information when you visit our site.</p>
+      <h3>2. How We Use It</h3>
+      <p>To create and manage your account, process investments/withdrawals, provide support via email and WhatsApp, and improve our services.</p>
+      <h3>3. Data Protection</h3>
+      <p>We use encryption and secure servers. We never sell your personal data to third parties.</p>
+      <h3>4. Cookies</h3>
+      <p>Our GitHub-hosted site may use basic cookies for site functionality and analytics.</p>
+      <h3>5. Third Parties</h3>
+      <p>We may share data only with necessary service providers for payment processing and legal compliance.</p>
+      <h3>6. Your Rights</h3>
+      <p>You can request access, correction, or deletion of your personal data by emailing <a href="mailto:joyjetcapitalsupport@gmail.com" style="color:var(--gold)">joyjetcapitalsupport@gmail.com</a></p>
+      <h3>7. Contact</h3>
+      <p>For any privacy concerns, email joyjetcapitalsupport@gmail.com or WhatsApp +1 (919) 724-1336</p>
+      <a class="wa-btn" href="https://wa.me/19197241336?text=Hello%20JoyJet%20Capital%2C%20I%20would%20like%20to%20make%20an%20Investment%20in%20your%20company%2C%20how%20much%20is%20the%20investment%E2%80%99s%20starter%20pack%20plan%20and%20how%20much%20is%20the%20initial%20investment%20deposit%20cost%20and%20interest%20rates%3F" target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a>
+    </div>
+  </section>
+</main>
+
+<nav class="dock" aria-label="App">
+  <button type="button" data-route="home" aria-current="page">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z"/></svg>
+    Home
+  </button>
+  <button type="button" data-route="trade">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M9 7h8v8"/></svg>
+    Trade
+  </button>
+  <button type="button" data-route="pulse">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h3l2-6 4 12 2-6h5"/></svg>
+    Pulse
+  </button>
+  <button type="button" data-route="me">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 19c1.5-3 4-4.5 7-4.5s5.5 1.5 7 4.5"/></svg>
+    Me
+  </button>
+</nav>
+
+<!-- Deposit blocked (2FA) -->
+<div class="scrim" id="dlgDeposit" role="dialog" aria-modal="true" aria-labelledby="depTitle">
+  <div class="dialog">
+    <h3 id="depTitle">Deposit blocked</h3>
+    <div class="warn-box">NEW DEVICE DETECTED. PLEASE COMPLETE 2-FACTOR AUTHENTICATION TO PROCEED USING PRIMARY DEVICE.</div>
+    <p>For your security, deposits are locked on this session until 2FA is completed on your primary device.</p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-gold" data-act="dep-close">Understood</button>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="dlgSell" role="dialog" aria-modal="true" aria-labelledby="sellTitle">
+  <div class="dialog">
+    <h3 id="sellTitle">Sell</h3>
+    <p>Close part of a position.</p>
+    <div class="field">
+      <label for="sellPct">Share</label>
+      <select id="sellPct">
+        <option value="0.25">25%</option>
+        <option value="0.5">50%</option>
+        <option value="0.75">75%</option>
+        <option value="1" selected>100%</option>
+      </select>
+    </div>
+    <p>Est. proceeds <strong id="sellEst">$0</strong></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-danger" data-act="sell-ok">Sell</button>
+      <button type="button" class="btn btn-ghost" data-act="sell-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="dlgWithdraw" role="dialog" aria-modal="true">
+  <div class="dialog">
+    <h3>Withdrawal restricted</h3>
+    <p>A $10,000 fixed deposit is required before payouts unlock at maturity. Your goal progress is shown on the dashboard.</p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-gold" data-act="wd-ok">Understood</button>
+    </div>
+  </div>
+</div>
+
+<footer class="shell foot"><b>JoyJet Capital Unlimited</b> · Where Your Money Takes Flight · © 2026 · <span id="pwaLabel">PWA</span></footer>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ── Catalog: crypto + stocks + ETF ── */
+  const ASSETS = Object.freeze([
+    { symbol: "BTC",  name: "Bitcoin",     kind: "crypto", color: "#f7931a", base: 64250, cg: "bitcoin" },
+    { symbol: "ETH",  name: "Ethereum",    kind: "crypto", color: "#627eea", base: 3450,  cg: "ethereum" },
+    { symbol: "SOL",  name: "Solana",      kind: "crypto", color: "#14f195", base: 148,   cg: "solana" },
+    { symbol: "BNB",  name: "BNB",         kind: "crypto", color: "#f0b90b", base: 585,   cg: "binancecoin" },
+    { symbol: "AAPL", name: "Apple",       kind: "stock",  color: "#A2AAAD", base: 228 },
+    { symbol: "MSFT", name: "Microsoft",   kind: "stock",  color: "#00A4EF", base: 430 },
+    { symbol: "SPY",  name: "S&P 500 ETF", kind: "etf",    color: "#6366f1", base: 565 }
+  ]);
+  const bySym = Object.fromEntries(ASSETS.map(a => [a.symbol, a]));
+
+  const PLANS = Object.freeze({
+    balanced: { label: "Balanced", tag: "Core", blurb: "BTC 30 · ETH 20 · SPY 30 · AAPL 20", w: { BTC: .3, ETH: .2, SPY: .3, AAPL: .2 } },
+    growth:   { label: "Growth", tag: "Aggressive", blurb: "SOL 25 · ETH 25 · MSFT 25 · BNB 25", w: { SOL: .25, ETH: .25, MSFT: .25, BNB: .25 } },
+    bluechip: { label: "Blue chip", tag: "Conservative", blurb: "SPY 50 · AAPL 25 · MSFT 25", w: { SPY: .5, AAPL: .25, MSFT: .25 } },
+    crypto:   { label: "Crypto core", tag: "Digital", blurb: "BTC 50 · ETH 30 · SOL 20", w: { BTC: .5, ETH: .3, SOL: .2 } }
+  });
+
+  const GOAL = 10000;
+  const KEY = "jj_capital_v6";
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const money = n => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(+n || 0);
+  const units = n => (+n).toLocaleString("en-US", { maximumFractionDigits: n >= 1 ? 4 : n >= 0.01 ? 6 : 8 });
+  const clamp$ = n => Math.round((+n || 0) * 100) / 100;
+  const clampU = n => Math.round((+n || 0) * 1e8) / 1e8;
+  const ago = ts => {
+    const d = Date.now() - ts;
+    if (d < 6e4) return "Just now";
+    if (d < 36e5) return Math.floor(d / 6e4) + "m ago";
+    if (d < 864e5) return Math.floor(d / 36e5) + "h ago";
+    if (d < 6048e5) return Math.floor(d / 864e5) + "d ago";
+    return new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  };
+  const at = iso => Date.parse(iso + "T12:00:00Z");
+
+  /* ── Seed ledger (CSV history + Sep 27, 2026 AAPL top-up) ── */
+  function seed() {
+    const hold = Object.fromEntries(ASSETS.map(a => [a.symbol, { units: 0, cost: 0 }]));
+    const base = Object.fromEntries(ASSETS.map(a => [a.symbol, a.base]));
+    /* Cost basis after full ledger:
+       BTC 900 · ETH 700 · SOL 400 · AAPL 700 (400 + 150 Aug 30 + 150 Sep 27) · SPY 300
+       Holdings cost $3,000 · cash $180 · equity ≈ $3,180 at seed prices */
+    hold.BTC  = { units: clampU(900 / base.BTC),  cost: 900 };
+    hold.ETH  = { units: clampU(700 / base.ETH),  cost: 700 };
+    hold.SOL  = { units: clampU(400 / base.SOL),  cost: 400 };
+    hold.AAPL = { units: clampU(700 / base.AAPL), cost: 700 };
+    hold.SPY  = { units: clampU(300 / base.SPY),  cost: 300 };
+    // +$150 deposit then −$150 AAPL invest on 2026-09-27 → cash stays $180
+    const cash = 180;
+    const txs = [
+      { id: 1,  kind: "Deposit",  note: "Deposited $100",              amt: 100,  at: at("2025-10-19") },
+      { id: 2,  kind: "Invest",   note: "Invested $100 in BTC",        amt: 100,  at: at("2025-10-19") },
+      { id: 3,  kind: "Withdraw", note: "Withdrew $200",               amt: 200,  at: at("2025-11-03") },
+      { id: 4,  kind: "Deposit",  note: "Deposited $500",              amt: 500,  at: at("2025-12-25") },
+      { id: 5,  kind: "Invest",   note: "Invested $500",               amt: 500,  at: at("2025-12-25") },
+      { id: 6,  kind: "Deposit",  note: "Deposited $1,000",            amt: 1000, at: at("2025-12-31") },
+      { id: 7,  kind: "Invest",   note: "Invested $1,000",             amt: 1000, at: at("2025-12-31") },
+      { id: 8,  kind: "Deposit",  note: "Deposited $250",              amt: 250,  at: at("2026-01-04") },
+      { id: 9,  kind: "Invest",   note: "Invested $250",               amt: 250,  at: at("2026-01-04") },
+      { id: 10, kind: "Deposit",  note: "Deposited $500",              amt: 500,  at: at("2026-01-30") },
+      { id: 11, kind: "Invest",   note: "Invested $500",               amt: 500,  at: at("2026-01-30") },
+      { id: 12, kind: "Sell",     note: "Sold partial SOL",            amt: 120,  at: at("2026-02-14") },
+      { id: 13, kind: "Deposit",  note: "Deposited $100",              amt: 100,  at: at("2026-03-13") },
+      { id: 14, kind: "Invest",   note: "Invested $100",               amt: 100,  at: at("2026-03-13") },
+      { id: 15, kind: "Deposit",  note: "Deposited $300",              amt: 300,  at: at("2026-06-25") },
+      { id: 16, kind: "Invest",   note: "Invested $300 in SPY",        amt: 300,  at: at("2026-06-25") },
+      { id: 17, kind: "Deposit",  note: "Deposited $150",              amt: 150,  at: at("2026-08-30") },
+      { id: 18, kind: "Invest",   note: "Invested $150 in AAPL",       amt: 150,  at: at("2026-08-30") },
+      { id: 19, kind: "Sell",     note: "Sold partial ETH",            amt: 80,   at: at("2026-09-10") },
+      { id: 20, kind: "Deposit",  note: "Deposited $150",              amt: 150,  at: at("2026-09-27") },
+      { id: 21, kind: "Invest",   note: "Invested $150 in AAPL stock", amt: 150,  at: at("2026-09-27") }
+    ];
+    const activity = txs.map(t => ({
+      kind: t.kind === "Deposit" ? "deposit" : t.kind === "Invest" ? "buy" : t.kind === "Sell" ? "sell" : "out",
+      text: t.note,
+      at: t.at
+    }));
+    let v = 500;
+    const curve = [];
+    for (let i = 0; i < 24; i++) {
+      v += 100 + (Math.random() - 0.25) * 55;
+      curve.push(clamp$(Math.min(3800, Math.max(200, v))));
+    }
+    // Equity ≈ holdings cost $3,000 + cash $180
+    curve[curve.length - 1] = 3000 + cash;
+    return {
+      theme: "dark",
+      who: "Anthony & Indiana",
+      route: "home",
+      cash,
+      hold,
+      realized: 45,
+      txs,
+      activity,
+      alerts: [],
+      curve,
+      quotes: Object.fromEntries(ASSETS.map(a => [a.symbol, a.base])),
+      delta: Object.fromEntries(ASSETS.map(a => [a.symbol, 0])),
+      plan: null,
+      sellSym: null,
+      txFilter: "all",
+      liveOk: false
+    };
+  }
+
+  function migrate(s) {
+    /* Ensure 2026-09-27 $150 deposit + $150 AAPL invest are present without wiping other state */
+    if (!s || !Array.isArray(s.txs)) return seed();
+    const hasToday = s.txs.some(t =>
+      t && t.at === at("2026-09-27") && t.kind === "Deposit" && +t.amt === 150
+    );
+    if (hasToday) {
+      // Align AAPL cost/units if ledger has both AAPL invests but hold lagged
+      if (s.hold && s.hold.AAPL && +s.hold.AAPL.cost < 700) {
+        const base = bySym.AAPL.base;
+        s.hold.AAPL = { units: clampU(700 / base), cost: 700 };
+      }
+      return s;
+    }
+    const dep = { id: Date.now() - 1, kind: "Deposit", note: "Deposited $150", amt: 150, at: at("2026-09-27") };
+    const inv = { id: Date.now(), kind: "Invest", note: "Invested $150 in AAPL stock", amt: 150, at: at("2026-09-27") };
+    s.txs = s.txs.concat([dep, inv]);
+    s.activity = (s.activity || []).concat([
+      { kind: "deposit", text: "Deposited $150", at: at("2026-09-27") },
+      { kind: "buy", text: "Invested $150 in AAPL stock", at: at("2026-09-27") }
+    ]);
+    if (!s.hold) s.hold = {};
+    if (!s.hold.AAPL) s.hold.AAPL = { units: 0, cost: 0 };
+    const base = bySym.AAPL.base;
+    const addU = clampU(150 / (s.quotes?.AAPL || base));
+    s.hold.AAPL.units = clampU((s.hold.AAPL.units || 0) + addU);
+    s.hold.AAPL.cost = clamp$((s.hold.AAPL.cost || 0) + 150);
+    // Deposit then invest nets zero cash change
+    s.cash = clamp$(s.cash || 0);
+    if (Array.isArray(s.curve)) {
+      s.curve.push(clamp$((s.cash || 0) + Object.keys(s.hold).reduce((n, sym) => {
+        const h = s.hold[sym];
+        const p = (s.quotes && s.quotes[sym]) || (bySym[sym] && bySym[sym].base) || 0;
+        return n + (h?.units || 0) * p;
+      }, 0)));
+      if (s.curve.length > 32) s.curve.shift();
+    }
+    return s;
+  }
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) {
+        const s = JSON.parse(raw);
+        if (s && s.txs) return migrate(s);
+      }
+    } catch (_) {}
+    return seed();
+  }
+
+  const state = load();
+  document.documentElement.setAttribute("data-theme", state.theme === "light" ? "light" : "dark");
+
+  function persist() {
+    try {
+      const { quotes, delta, liveOk, ...rest } = state;
+      localStorage.setItem(KEY, JSON.stringify(rest));
+    } catch (_) {}
+  }
+  // Persist after migrate so History / Profile stay in sync on next visit
+  persist();
+
+  const px = s => state.quotes[s] || bySym[s].base;
+  const mkt = () => ASSETS.reduce((n, a) => n + (state.hold[a.symbol]?.units || 0) * px(a.symbol), 0);
+  const cost = () => ASSETS.reduce((n, a) => n + (state.hold[a.symbol]?.cost || 0), 0);
+  const equity = () => state.cash + mkt();
+
+  function toast(msg, tone = "note") {
+    const el = document.createElement("div");
+    el.className = "toast " + (tone === "ok" ? "ok" : tone === "bad" ? "bad" : "");
+    el.textContent = msg;
+    $("#toasts").append(el);
+    setTimeout(() => el.remove(), 3200);
+  }
+
+  function logTx(kind, note, amt) {
+    state.txs.push({ id: Date.now(), kind, note, amt, at: Date.now() });
+  }
+  function logAct(kind, text) {
+    state.activity.push({ kind, text, at: Date.now() });
+    if (state.activity.length > 40) state.activity = state.activity.slice(-40);
+  }
+  function pushCurve() {
+    state.curve.push(clamp$(equity()));
+    if (state.curve.length > 32) state.curve.shift();
+  }
+
+  /* ── Charts ── */
+  let equityChart, allocChart;
+  function ensureCharts() {
+    if (typeof Chart === "undefined") return;
+    if (!equityChart) {
+      equityChart = new Chart($("#equityChart"), {
+        type: "line",
+        data: { labels: [], datasets: [{ data: [], borderColor: "#f0b90b", backgroundColor: "rgba(240,185,11,.15)", fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2.5 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false, interaction: { mode: "index", intersect: false },
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => money(c.parsed.y) } } },
+          scales: {
+            x: { display: false },
+            y: { ticks: { callback: v => "$" + Math.round(v), color: "#8892a0", font: { size: 10 } }, grid: { color: "rgba(128,128,128,.12)" } }
+          }
+        }
+      });
+    }
+    if (!allocChart) {
+      allocChart = new Chart($("#allocChart"), {
+        type: "doughnut",
+        data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 0 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: "62%",
+          plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => c.label + ": " + money(c.parsed) } } }
+        }
+      });
+    }
+  }
+
+  function paintCharts() {
+    ensureCharts();
+    if (equityChart) {
+      equityChart.data.labels = state.curve.map((_, i) => i);
+      equityChart.data.datasets[0].data = state.curve.slice();
+      equityChart.update("none");
+    }
+    if (allocChart) {
+      const slices = ASSETS.map(a => ({
+        label: a.symbol, color: a.color, v: (state.hold[a.symbol]?.units || 0) * px(a.symbol)
+      })).filter(s => s.v > 0.5);
+      allocChart.data.labels = slices.map(s => s.label);
+      allocChart.data.datasets[0].data = slices.map(s => s.v);
+      allocChart.data.datasets[0].backgroundColor = slices.map(s => s.color);
+      allocChart.update("none");
+      const total = slices.reduce((n, s) => n + s.v, 0) || 1;
+      $("#allocLegend").innerHTML = slices.map(s =>
+        `<span><i style="background:${s.color}"></i>${s.label} ${Math.round(s.v / total * 100)}%</span>`
+      ).join("") || "";
+    }
+  }
+
+  /* ── Paint ── */
+  function paintHero() {
+    const cash = state.cash, mk = mkt(), cs = cost(), pnl = mk - cs + (state.realized || 0);
+    const eq = cash + mk;
+    $("#balTotal").textContent = money(eq);
+    $("#balCash").textContent = money(cash);
+    $("#balHold").textContent = money(mk);
+    $("#balCost").textContent = money(cs);
+    const pnlEl = $("#balPnl");
+    pnlEl.textContent = (pnl >= 0 ? "+" : "") + money(pnl);
+    pnlEl.classList.toggle("up", pnl >= 0);
+    pnlEl.classList.toggle("down", pnl < 0);
+
+    const pct = Math.min(100, (eq / GOAL) * 100);
+    $("#goalFill").style.width = pct.toFixed(1) + "%";
+    $("#goalBar").setAttribute("aria-valuenow", Math.round(eq));
+    $("#goalPct").textContent = pct.toFixed(1) + "% of target";
+    $("#goalLeft").textContent = money(Math.max(0, GOAL - eq)) + " to go";
+    $("#meGoal").textContent = `${money(eq)} of ${money(GOAL)} · ${pct.toFixed(1)}% · deadline Dec 2026`;
+  }
+
+  function paintHoldings() {
+    const rows = ASSETS.filter(a => (state.hold[a.symbol]?.units || 0) > 1e-10).map(a => {
+      const h = state.hold[a.symbol];
+      const mv = h.units * px(a.symbol);
+      const u = mv - h.cost;
+      const cls = u >= 0 ? "up" : "down";
+      return `<tr>
+        <td><div class="asset-cell"><span class="dot" style="background:${a.color}"></span>${a.symbol}
+          <span class="tag" style="font-size:0.65rem;color:var(--mute);font-weight:600">${a.kind}</span></div>
+          <div style="font-size:0.72rem;color:var(--mute)">${units(h.units)} · cost ${money(h.cost)}</div></td>
+        <td style="text-align:right">${money(mv)}<div style="font-size:0.72rem" class="${cls}">${u >= 0 ? "+" : ""}${money(u)}</div></td>
+        <td style="text-align:right"><button type="button" class="btn btn-ghost btn-sm" data-act="sell" data-sym="${a.symbol}">Sell</button></td>
+      </tr>`;
+    });
+    $("#holdingsMount").innerHTML = rows.length
+      ? `<table><thead><tr><th>Asset</th><th style="text-align:right">Value</th><th></th></tr></thead><tbody>${rows.join("")}</tbody></table>`
+      : `<p class="empty">No holdings yet</p>`;
+  }
+
+  function paintTickers() {
+    $("#tickers").innerHTML = ASSETS.map(a => {
+      const d = state.delta[a.symbol] || 0;
+      const cls = d >= 0 ? "up" : "down";
+      return `<div class="ticker">
+        <div class="sym">${a.symbol}<span class="tag">${a.kind}</span></div>
+        <div class="px">${money(px(a.symbol))}</div>
+        <div class="d ${cls}">${d >= 0 ? "+" : ""}${d.toFixed(2)}%</div>
+      </div>`;
+    }).join("");
+    $("#tickAt").textContent = "· " + new Date().toLocaleTimeString() + (state.liveOk ? " · live" : "");
+  }
+
+  function paintFeed() {
+    const items = [...state.activity].reverse().slice(0, 14);
+    $("#feedMount").innerHTML = items.map(e => {
+      const pip = e.kind === "deposit" || e.kind === "sell" ? "in" : e.kind === "buy" ? "out" : "";
+      return `<li><span class="pip ${pip}"></span><span>${e.text}</span><time>${ago(e.at)}</time></li>`;
+    }).join("") || `<li class="empty">Quiet so far.</li>`;
+  }
+
+  function sortTxs(list) {
+    const rank = { Deposit: 0, Invest: 1, Sell: 2, Withdraw: 3 };
+    return list.slice().sort((a, b) => {
+      if (b.at !== a.at) return b.at - a.at;
+      return (rank[a.kind] ?? 9) - (rank[b.kind] ?? 9);
+    });
+  }
+
+  function paintLedger() {
+    let txs = sortTxs(state.txs);
+    if (state.txFilter !== "all") txs = txs.filter(t => t.kind === state.txFilter);
+    $("#ledgerMount").innerHTML = txs.map(t => {
+      const pre = t.kind === "Deposit" || t.kind === "Sell" ? "+" : "−";
+      const pip = t.kind === "Deposit" || t.kind === "Sell" ? "in" : "out";
+      return `<li><span class="pip ${pip}"></span>
+        <span><strong>${t.kind}</strong> · ${t.note}<br><span style="color:var(--mute);font-size:0.78rem">${pre}${money(t.amt)}</span></span>
+        <time>${ago(t.at)}</time></li>`;
+    }).join("") || `<li class="empty">No transactions</li>`;
+  }
+
+  function paintTax() {
+    const sells = state.txs.filter(t => t.kind === "Sell");
+    const proceeds = sells.reduce((n, t) => n + t.amt, 0);
+    const realized = state.realized || 0;
+    $("#taxMount").innerHTML = `
+      <p style="font-size:0.88rem;line-height:1.6">
+        Sell events: <strong>${sells.length}</strong><br>
+        Gross proceeds: <strong>${money(proceeds)}</strong><br>
+        Realized P&amp;L: <strong class="${realized >= 0 ? "up" : "down"}">${money(realized)}</strong><br>
+        <span style="color:var(--mute);font-size:0.78rem">Not tax advice. Export CSV for your records or advisor.</span>
+      </p>`;
+  }
+
+  function paintArmed() {
+    if (!state.alerts.length) {
+      $("#armedMount").innerHTML = `<p class="empty">No triggers armed.</p>`;
+      return;
+    }
+    $("#armedMount").innerHTML = state.alerts.map((tr, i) =>
+      `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)">
+        <div><strong>${tr.symbol}</strong> ${tr.dir} ${money(tr.px)}
+          <div style="font-size:0.75rem;color:var(--mute)">Now ${money(px(tr.symbol))}</div></div>
+        <button type="button" class="btn btn-ghost btn-sm" data-act="disarm" data-i="${i}">Disarm</button>
+      </div>`
+    ).join("");
+  }
+
+  function paintMe() {
+    const cash = state.cash, mk = mkt(), cs = cost();
+    const pnl = mk - cs + (state.realized || 0);
+    const eq = cash + mk;
+    const pct = Math.min(100, (eq / GOAL) * 100);
+    $("#meWho").textContent = state.who;
+    $("#meBal").textContent = money(eq);
+    $("#meHold").textContent = money(mk);
+    const mi = $("#meInterest");
+    mi.textContent = (pnl >= 0 ? "+" : "") + money(pnl);
+    mi.classList.toggle("up", pnl >= 0);
+    mi.classList.toggle("down", pnl < 0);
+    $("#meTxCount").textContent = String(state.txs.length);
+    $("#meGoal").textContent = `${money(eq)} of ${money(GOAL)} toward your Dec 2026 target`;
+    $("#meGoalFill").style.width = pct.toFixed(1) + "%";
+    $("#meGoalPct").textContent = pct.toFixed(1) + "% of target";
+    $("#meGoalBar").setAttribute("aria-valuenow", Math.round(eq));
+
+    const holdRows = ASSETS.filter(a => (state.hold[a.symbol]?.units || 0) > 1e-10).map(a => {
+      const h = state.hold[a.symbol];
+      const mv = h.units * px(a.symbol);
+      return `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:0.88rem">
+        <span><strong>${a.symbol}</strong> <span style="color:var(--mute)">${a.kind}</span></span>
+        <span>${money(mv)}</span></div>`;
+    });
+    $("#meHoldings").innerHTML = holdRows.length ? holdRows.join("") : `<p class="empty">No holdings</p>`;
+
+    const txs = sortTxs(state.txs).slice(0, 6);
+    $("#meTx").innerHTML = txs.map(t => {
+      const pip = t.kind === "Deposit" || t.kind === "Sell" ? "in" : "out";
+      return `<li><span class="pip ${pip}"></span><span>${t.note}</span><time>${ago(t.at)}</time></li>`;
+    }).join("") || `<li class="empty">No transactions</li>`;
+
+    const acts = [...state.activity].reverse().slice(0, 8);
+    $("#meActivity").innerHTML = acts.map(e => {
+      const pip = e.kind === "deposit" || e.kind === "sell" ? "in" : e.kind === "buy" ? "out" : "";
+      return `<li><span class="pip ${pip}"></span><span>${e.text}</span><time>${ago(e.at)}</time></li>`;
+    }).join("") || `<li class="empty">Quiet so far</li>`;
+  }
+
+  function paint() {
+    paintHero();
+    paintCharts();
+    paintHoldings();
+    paintTickers();
+    paintFeed();
+    paintLedger();
+    paintTax();
+    paintArmed();
+    paintMe();
+    $("#who").textContent = state.who;
+    $("#themeLabel").textContent = state.theme === "light" ? "Light" : "Dark";
+  }
+
+  /* ── Routing ── */
+  function route(name) {
+    const map = {
+      home: "home", dashboard: "home", trade: "trade", invest: "trade",
+      pulse: "pulse", history: "history", me: "me",
+      support: "support", about: "about", terms: "terms", privacy: "privacy"
+    };
+    const view = map[name] || "home";
+    state.route = view;
+    $$(".view").forEach(v => v.classList.toggle("on", v.dataset.view === view));
+    $$(".dock button").forEach(b => b.setAttribute("aria-current", b.dataset.route === view ? "page" : "false"));
+    $$(".top-links a, .mobile-drawer a").forEach(a => {
+      const r = map[a.dataset.route] || a.dataset.route;
+      a.setAttribute("aria-current", r === view ? "page" : "false");
+    });
+    closeDrawer();
+    if (view === "home") setTimeout(paintCharts, 50);
+    persist();
+  }
+
+  function openDlg(id) { $("#" + id).classList.add("on"); }
+  function closeDlg(id) { $("#" + id).classList.remove("on"); }
+  function closeDrawer() {
+    $("#drawer").classList.remove("on");
+    $("#drawer").hidden = true;
+  }
+
+  /* ── Actions ── */
+  function doBuy(sym, usd) {
+    usd = clamp$(usd);
+    if (!(usd > 0)) return toast("Enter an amount", "bad");
+    if (usd > state.cash) return toast("Insufficient cash", "bad");
+    const price = px(sym);
+    const u = clampU(usd / price);
+    state.cash = clamp$(state.cash - usd);
+    state.hold[sym].units = clampU(state.hold[sym].units + u);
+    state.hold[sym].cost = clamp$(state.hold[sym].cost + usd);
+    logTx("Invest", `Invested ${money(usd)} in ${sym}`, usd);
+    logAct("buy", `Bought ${units(u)} ${sym}`);
+    pushCurve(); persist(); paint();
+    toast(`Invested ${money(usd)} in ${sym}`, "ok");
+    route("home");
+  }
+
+  function doPlan() {
+    if (!state.plan) return;
+    const usd = clamp$(+$("#usdIn").value);
+    if (!(usd > 0)) return toast("Set total USD for blueprint", "bad");
+    if (usd > state.cash) return toast("Insufficient cash", "bad");
+    const w = PLANS[state.plan].w;
+    const keys = Object.keys(w);
+    let spent = 0;
+    keys.forEach((sym, i) => {
+      const slice = i === keys.length - 1 ? clamp$(usd - spent) : clamp$(usd * w[sym]);
+      if (slice > 0 && state.cash >= slice) {
+        const price = px(sym);
+        const u = clampU(slice / price);
+        state.cash = clamp$(state.cash - slice);
+        state.hold[sym].units = clampU(state.hold[sym].units + u);
+        state.hold[sym].cost = clamp$(state.hold[sym].cost + slice);
+        spent += slice;
+        logTx("Invest", `Blueprint ${PLANS[state.plan].label}: ${sym}`, slice);
+      }
+    });
+    logAct("buy", `Blueprint ${PLANS[state.plan].label} · ${money(usd)}`);
+    pushCurve(); persist(); paint();
+    toast(`Blueprint applied · ${money(usd)}`, "ok");
+    route("home");
+  }
+
+  function openSell(sym) {
+    state.sellSym = sym;
+    $("#sellTitle").textContent = "Sell " + sym;
+    updateSellEst();
+    openDlg("dlgSell");
+  }
+  function updateSellEst() {
+    if (!state.sellSym) return;
+    const h = state.hold[state.sellSym];
+    const pct = +$("#sellPct").value;
+    $("#sellEst").textContent = money(h.units * pct * px(state.sellSym));
+  }
+  function confirmSell() {
+    const sym = state.sellSym;
+    if (!sym) return;
+    const h = state.hold[sym];
+    const pct = +$("#sellPct").value;
+    const u = clampU(h.units * pct);
+    const proceeds = clamp$(u * px(sym));
+    const costPart = clamp$(h.cost * pct);
+    const pnl = proceeds - costPart;
+    h.units = clampU(h.units - u);
+    h.cost = clamp$(h.cost - costPart);
+    if (h.units < 1e-10) { h.units = 0; h.cost = 0; }
+    state.cash = clamp$(state.cash + proceeds);
+    state.realized = clamp$((state.realized || 0) + pnl);
+    logTx("Sell", `Sold ${units(u)} ${sym} for ${money(proceeds)}`, proceeds);
+    logAct("sell", `Sold ${units(u)} ${sym}`);
+    pushCurve(); persist(); closeDlg("dlgSell"); state.sellSym = null;
+    paint(); toast(`Sold ${sym} · ${money(proceeds)}`, "ok");
+  }
+
+  /* ── Prices: CoinGecko + equity jitter fallback ── */
+  async function fetchLive() {
+    try {
+      const ids = ASSETS.filter(a => a.cg).map(a => a.cg).join(",");
+      const res = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`,
+        { signal: AbortSignal.timeout(8000) }
+      );
+      if (!res.ok) throw new Error("cg");
+      const j = await res.json();
+      ASSETS.forEach(a => {
+        if (a.cg && j[a.cg]?.usd != null) {
+          const next = j[a.cg].usd;
+          const prev = state.quotes[a.symbol] || a.base;
+          state.delta[a.symbol] = j[a.cg].usd_24h_change != null
+            ? j[a.cg].usd_24h_change
+            : ((next - prev) / prev) * 100;
+          state.quotes[a.symbol] = next;
+        } else {
+          // stocks / etf: gentle jitter
+          const prev = state.quotes[a.symbol] || a.base;
+          const next = Math.max(a.base * 0.7, prev * (1 + (Math.random() - 0.5) * 0.006));
+          state.delta[a.symbol] = ((next - prev) / prev) * 100;
+          state.quotes[a.symbol] = next;
+        }
+      });
+      state.liveOk = true;
+    } catch (_) {
+      state.liveOk = false;
+      ASSETS.forEach(a => {
+        const prev = state.quotes[a.symbol] || a.base;
+        const next = Math.max(a.base * 0.65, prev * (1 + (Math.random() - 0.5) * 0.01));
+        state.delta[a.symbol] = ((next - prev) / prev) * 100;
+        state.quotes[a.symbol] = next;
+      });
+    }
+    // evaluate alerts
+    const kept = [];
+    for (const tr of state.alerts) {
+      const price = px(tr.symbol);
+      const hit = tr.dir === "above" ? price >= tr.px : price <= tr.px;
+      if (hit) {
+        toast(`${tr.symbol} ${tr.dir} ${money(tr.px)}`, "ok");
+        logAct("out", `Trigger: ${tr.symbol} ${tr.dir} ${money(tr.px)}`);
+      } else kept.push(tr);
+    }
+    state.alerts = kept;
+    persist();
+    paint();
+  }
+
+  let quoteTimer;
+  function armQuotes() {
+    clearInterval(quoteTimer);
+    fetchLive();
+    quoteTimer = setInterval(fetchLive, 45000);
+  }
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) clearInterval(quoteTimer);
+    else armQuotes();
+  });
+
+  /* ── Wire UI ── */
+  function fillSelects() {
+    const opts = ASSETS.map(a =>
+      `<option value="${a.symbol}">${a.name} (${a.symbol}) · ${a.kind}</option>`
+    ).join("");
+    $("#asset").innerHTML = opts;
+    $("#aSym").innerHTML = opts;
+  }
+  function fillPlans() {
+    $("#blueprints").innerHTML = Object.entries(PLANS).map(([k, b]) =>
+      `<button type="button" class="plan" role="option" data-plan="${k}" aria-checked="false">
+        <strong>${b.label}</strong><span>${b.blurb}</span><em>${b.tag}</em></button>`
+    ).join("");
+  }
+
+  document.addEventListener("click", e => {
+    const t = e.target.closest("[data-act],[data-route],[data-plan],[data-filter]");
+    if (!t) {
+      if (e.target.id === "drawer") closeDrawer();
+      return;
+    }
+    if (t.dataset.route) { route(t.dataset.route); return; }
+    if (t.dataset.plan) {
+      state.plan = t.dataset.plan;
+      $$(".plan").forEach(p => p.setAttribute("aria-checked", p.dataset.plan === state.plan ? "true" : "false"));
+      $("#planBuy").disabled = false;
+      return;
+    }
+    if (t.dataset.filter) {
+      state.txFilter = t.dataset.filter;
+      $$("#txSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.filter === state.txFilter ? "true" : "false"));
+      paintLedger();
+      return;
+    }
+    switch (t.dataset.act) {
+      case "deposit": openDlg("dlgDeposit"); break;
+      case "dep-close": closeDlg("dlgDeposit"); break;
+      case "withdraw": openDlg("dlgWithdraw"); break;
+      case "wd-ok": closeDlg("dlgWithdraw"); break;
+      case "buy": doBuy($("#asset").value, +$("#usdIn").value); break;
+      case "plan-buy": doPlan(); break;
+      case "sell": openSell(t.dataset.sym); break;
+      case "sell-ok": confirmSell(); break;
+      case "sell-cancel": closeDlg("dlgSell"); state.sellSym = null; break;
+      case "arm": {
+        const symbol = $("#aSym").value;
+        const p = +$("#aPx").value;
+        const dir = $("#aDir").value;
+        if (!(p > 0)) return toast("Need a target price", "bad");
+        state.alerts.push({ symbol, px: p, dir });
+        persist(); paintArmed();
+        $("#aPx").value = "";
+        toast(`Armed ${symbol} ${dir} ${money(p)}`, "ok");
+        break;
+      }
+      case "disarm":
+        state.alerts.splice(+t.dataset.i, 1);
+        persist(); paintArmed();
+        break;
+      case "csv": {
+        const lines = ["date,kind,note,amount"];
+        sortTxs(state.txs).forEach(tx => {
+          lines.push([new Date(tx.at).toISOString().slice(0, 10), tx.kind, JSON.stringify(tx.note), tx.amt].join(","));
+        });
+        const blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv" });
+        const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: "joyjet-ledger.csv" });
+        a.click(); URL.revokeObjectURL(a.href);
+        toast("CSV downloaded", "ok");
+        break;
+      }
+      case "tax-csv": {
+        const sells = state.txs.filter(t => t.kind === "Sell");
+        const lines = ["date,description,proceeds,realized_pnl_note"];
+        sells.forEach(t => lines.push([new Date(t.at).toISOString().slice(0, 10), JSON.stringify(t.note), t.amt, "see app summary"].join(",")));
+        lines.push(`,,,total_realized,${state.realized || 0}`);
+        const blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv" });
+        const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(blob), download: "joyjet-tax-summary.csv" });
+        a.click(); URL.revokeObjectURL(a.href);
+        toast("Tax CSV ready", "ok");
+        break;
+      }
+    }
+  });
+
+  function toggleTheme() {
+    state.theme = state.theme === "light" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", state.theme);
+    persist();
+    $("#themeLabel").textContent = state.theme === "light" ? "Light" : "Dark";
+  }
+  $("#themeBtn").addEventListener("click", toggleTheme);
+  const themeMe = $("#themeBtnMe");
+  if (themeMe) themeMe.addEventListener("click", toggleTheme);
+  $("#burger").addEventListener("click", () => {
+    const d = $("#drawer");
+    d.hidden = false;
+    d.classList.add("on");
+  });
+  $("#sellPct").addEventListener("change", updateSellEst);
+
+  /* ── PWA ── */
+  const manifest = {
+    name: "JoyJet Capital",
+    short_name: "JoyJet",
+    display: "standalone",
+    start_url: "./",
+    background_color: "#090b0f",
+    theme_color: "#f0b90b",
+    icons: [{
+      src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%23f0b90b' width='192' height='192' rx='40'/%3E%3Ctext x='96' y='122' text-anchor='middle' font-size='100' font-family='system-ui' font-weight='800' fill='%230a0c10'%3EJ%3C/text%3E%3C/svg%3E",
+      sizes: "192x192", type: "image/svg+xml"
+    }]
+  };
+  const mlink = document.createElement("link");
+  mlink.rel = "manifest";
+  mlink.href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: "application/manifest+json" }));
+  document.head.append(mlink);
+
+  let deferred;
+  window.addEventListener("beforeinstallprompt", e => {
+    e.preventDefault();
+    deferred = e;
+    $("#installBtn").classList.add("on");
+  });
+  $("#installBtn").addEventListener("click", async () => {
+    if (!deferred) return;
+    deferred.prompt();
+    await deferred.userChoice;
+    deferred = null;
+    $("#installBtn").classList.remove("on");
+  });
+
+  if ("serviceWorker" in navigator) {
+    const sw = `self.addEventListener('install',e=>e.waitUntil(self.skipWaiting()));
+self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));
+self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>caches.match(e.request).then(r=>r||Response.error())))});`;
+    navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw], { type: "text/javascript" })), { scope: "./" })
+      .then(() => { $("#pwaLabel").textContent = "offline-ready"; })
+      .catch(() => { $("#pwaLabel").textContent = "serve via HTTPS for SW"; });
+  }
+
+  fillSelects();
+  fillPlans();
+  route(state.route || "home");
+  paint();
+  if (document.readyState === "complete") armQuotes();
+  else window.addEventListener("load", armQuotes);
+  setTimeout(paintCharts, 400);
+})();
+</script>
+</body>
+</html>
